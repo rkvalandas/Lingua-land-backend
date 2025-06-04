@@ -9,7 +9,9 @@ export interface Conversation {
   id: number;
   user_id: number;
   language: string;
+  title: string;
   created_at: Date;
+  updated_at: Date;
 }
 
 export interface Message {

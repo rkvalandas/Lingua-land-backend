@@ -39,7 +39,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8000;
 app.listen(port, () => {
   console.log(`Express server listening on port ${port}`);
   console.log(`Frontend URL: ${FRONTEND_URL}`);
