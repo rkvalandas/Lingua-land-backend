@@ -144,11 +144,14 @@ router.post(
         return res.status(401).json({ error: "User not authenticated" });
       }
 
-      const { language } = req.body;
+      const { language, title } = req.body;
 
       if (!language) {
         return res.status(400).json({ error: "Language is required" });
       }
+
+      // Use provided title or default to language name
+      const conversationTitle = title || `${language} Conversation`;
 
       // Delete existing conversation for this language (cascade will handle messages)
       await db.query(
@@ -159,7 +162,7 @@ router.post(
       // Create new conversation for this language
       const result = await db.query(
         "INSERT INTO conversations (user_id, language, title) VALUES ($1, $2, $3) RETURNING id",
-        [req.user.id, language, `${language} Conversation`]
+        [req.user.id, language, conversationTitle]
       );
 
       res.json({
