@@ -19,15 +19,8 @@ app.use("/api", apiRoutes);
 // Frontend URL
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
-// For all other routes, redirect to the frontend
-app.get("*", (req: Request, res: Response) => {
-  // If this is an API request that wasn't caught by the API router, return 404
-  if (req.path.startsWith("/api/")) {
-    return res.status(404).json({ error: "API endpoint not found" });
-  }
-
-  // Redirect to the frontend URL
-  res.redirect(FRONTEND_URL);
+app.get("/", (req: Request, res: Response) => {
+  res.send("Language Learning App Backend is running.");
 });
 
 // Error handling middleware
