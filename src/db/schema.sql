@@ -1,4 +1,11 @@
-CREATE TABLE IF NOT EXISTS users (
+-- Drop existing tables if they exist (in correct order due to foreign keys)
+DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS conversations CASCADE;
+DROP TABLE IF EXISTS user_settings CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+-- Create users table
+CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   username VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
@@ -7,27 +14,28 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Each user can have multiple conversations, but unique language per user
-CREATE TABLE IF NOT EXISTS conversations (
+-- Create conversations table
+CREATE TABLE conversations (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   language VARCHAR(50) NOT NULL,
   title VARCHAR(255) DEFAULT 'My Conversation',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  -- Ensure each user can only have one conversation per language
   CONSTRAINT unique_user_language UNIQUE (user_id, language)
 );
 
-CREATE TABLE IF NOT EXISTS messages (
+-- Create messages table
+CREATE TABLE messages (
   id SERIAL PRIMARY KEY,
-  conversation_id INTEGER REFERENCES conversations(id) ON DELETE CASCADE,
+  conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
   is_user BOOLEAN NOT NULL,
   content TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS user_settings (
+-- Create user_settings table
+CREATE TABLE user_settings (
   user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   language_preference VARCHAR(50) DEFAULT 'English',
   theme_preference VARCHAR(20) DEFAULT 'auto',
@@ -36,11 +44,17 @@ CREATE TABLE IF NOT EXISTS user_settings (
 );
 
 -- Create indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON conversations(user_id);
-CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
-CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
+CREATE INDEX idx_conversations_user_id ON conversations(user_id);
+CREATE INDEX idx_conversations_language ON conversations(language);
+CREATE INDEX idx_messages_conversation_id ON messages(conversation_id);
+CREATE INDEX idx_messages_created_at ON messages(created_at DESC);
 
--- Insert a default user for testing (with hashed password for 'password123')
+-- Insert a test user (password is 'password123')
+-- Password hash for 'password123' using bcrypt
 INSERT INTO users (username, email, password_hash) 
-VALUES ('testuser', 'test@example.com', '$2a$10$K7L/BTyOhN1jkz9mFJJ7z.XYZaBCDefGHijklMNOpqrstuvwxyzABC') 
+VALUES (
+  'testuser', 
+  'test@example.com', 
+  '$2a$10$K7L1/BTyOhN1jkz9mFJJ7z.XYZaBCDefGHijklMNOpqrstuvwxyzABC'
+) 
 ON CONFLICT (email) DO NOTHING;
