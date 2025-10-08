@@ -32,8 +32,12 @@ export async function handleGenerateTTS(
     // Set metadata for the voice and audio format - using MP3 for better compatibility
     await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
 
-    // Create temp directory in project root
-    const tempDir = path.join(process.cwd(), "temp-audio");
+    // Use /tmp directory on Vercel (writable in serverless), fallback to local temp-audio
+    const tempDir = process.env.VERCEL 
+      ? "/tmp" 
+      : path.join(process.cwd(), "temp-audio");
+    
+    // Create directory if it doesn't exist (only needed for local)
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
